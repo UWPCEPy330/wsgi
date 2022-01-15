@@ -1,3 +1,5 @@
+import pysnooper
+
 """
 This pseudo calculator should support the following operations:
 
@@ -20,21 +22,46 @@ Consider the following URL/Response body pairs as tests:
 ```
 
 """
+@pysnooper.snoop()
+def func(sign, *args):
 
+    response = ''
+
+    if sign == 'positive':
+        for arg in args:
+            print('check positive called on ' + arg)
+            if int(arg) >= 0:
+                response = 'True'
+            else:
+                response = 'False'
+    elif sign == 'negative':
+        for arg in args:
+            print('check negative called on ' + arg)
+            if int(arg) < 0:
+                return 'True'
+            else:
+                return 'False'
+    else:
+        print('no func called')
+        raise NameError
+
+    return response
+
+
+@pysnooper.snoop()
 def resolve_path(path):
     """
     Should return two values: a callable and an iterable of
     arguments, based on the path.
     """
 
-    # TODO: Provide correct values for func and args. The
-    # examples provide the correct *syntax*, but you should
-    # determine the actual values of func and args using the
-    # path.
-    func = some_func
-    args = ['25', '32']
+    path = path.strip('/').split('/')
+    print(path)
 
-    return func, args
+    sign = path[0]
+    args = path[1:]
+
+    return sign, args
 
 def application(environ, start_response):
     headers = [('Content-type', 'text/html')]
@@ -42,8 +69,9 @@ def application(environ, start_response):
         path = environ.get('PATH_INFO', None)
         if path is None:
             raise NameError
-        func, args = resolve_path(path)
-        body = func(*args)
+        sign, args = resolve_path(path)
+        body = func(sign, *args)
+        print('body is ' + body)
         status = "200 OK"
     except NameError:
         status = "404 Not Found"
